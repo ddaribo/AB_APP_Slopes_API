@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AB_APP_Slopes_API", "AB_APP_Slopes_API\AB_APP_Slopes_API.csproj", "{DBAEA866-2F55-4013-ACA1-EBF7F161BBD9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DBAEA866-2F55-4013-ACA1-EBF7F161BBD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DBAEA866-2F55-4013-ACA1-EBF7F161BBD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DBAEA866-2F55-4013-ACA1-EBF7F161BBD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DBAEA866-2F55-4013-ACA1-EBF7F161BBD9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C4C960DA-AC69-41D0-9753-93DBB6290FDF}
+	EndGlobalSection
+EndGlobal
