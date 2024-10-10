@@ -1,6 +1,9 @@
 using AB_APP_Slopes_API.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +12,14 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
+builder.Services.AddCors(options => options.AddPolicy("CorsPolicy",
+                                builder =>
+                                {
+                                    builder.AllowAnyOrigin()
+                                           .AllowAnyMethod()
+                                           .AllowAnyHeader();
+                                }));
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
@@ -21,6 +32,31 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
+// JWT Configuration
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var key = Encoding.ASCII.GetBytes(jwtSettings["Secret"]);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(key)
+    };
+});
+
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -30,6 +66,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+app.UseCors("CorsPolicy");
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

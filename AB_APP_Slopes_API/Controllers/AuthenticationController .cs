@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using AB_APP_Slopes_API.Models; // Create this model to define login and register DTOs
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace SimpleApiWithAuth.Controllers
 {
@@ -12,11 +16,13 @@ namespace SimpleApiWithAuth.Controllers
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly IConfiguration _configuration;
 
-        public AuthenticationController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+        public AuthenticationController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IConfiguration configuration)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _configuration = configuration;
         }
 
         // POST: api/authentication/register
@@ -51,11 +57,16 @@ namespace SimpleApiWithAuth.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+                return Unauthorized(new { Message = "Invalid login attempt" });
+
             var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
 
             if (result.Succeeded)
             {
-                return Ok(new { Message = "Login successful" });
+                var token = await GenerateJwtToken(user);
+                return Ok(new { Token = token, Message = "Login successful" });
             }
             else if (result.IsLockedOut)
             {
@@ -65,6 +76,37 @@ namespace SimpleApiWithAuth.Controllers
             {
                 return Unauthorized(new { Message = "Invalid login attempt" });
             }
+        }
+
+        private async Task<string> GenerateJwtToken(IdentityUser user)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Name, user.UserName)
+            };
+
+            // Add roles as claims if you have role-based authorization
+            var roles = await _userManager.GetRolesAsync(user);
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Secret"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var tokenDescriptor = new JwtSecurityToken(
+                issuer: _configuration["JwtSettings:Issuer"],
+                audience: _configuration["JwtSettings:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(Convert.ToDouble(_configuration["JwtSettings:TokenLifetimeInMinutes"])),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
         }
 
         // POST: api/authentication/logout

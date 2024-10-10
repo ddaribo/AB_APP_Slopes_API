@@ -13,5 +13,10 @@ namespace AB_APP_Slopes_API.Data
         }
 
         public DbSet<Resort> Resorts { get; set; }  
+        public DbSet<Lift> Lifts { get; set; }  
+        public DbSet<SkiPass> SkiPasses { get; set; }  
+        public DbSet<SkiPassValidationItem> SkiPassValidationItems { get; set; }  
+        public DbSet<FeedPost> SocialFeed { get; set; }  
+        public DbSet<Comment> Comments { get; set; }  
     }
 }

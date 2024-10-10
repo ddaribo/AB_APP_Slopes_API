@@ -4,6 +4,7 @@ using AB_APP_Slopes_API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AB_APP_Slopes_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240925075837_AddResortForSkiPass")]
+    partial class AddResortForSkiPass
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,73 +24,6 @@ namespace AB_APP_Slopes_API.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
-
-            modelBuilder.Entity("AB_APP_Slopes_API.Models.Comment", b =>
-                {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("ID"));
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int?>("FeedPostID")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("TimeStamp")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("varchar(255)");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("FeedPostID");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Comments");
-                });
-
-            modelBuilder.Entity("AB_APP_Slopes_API.Models.FeedPost", b =>
-                {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("ID"));
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<byte[]>("Image")
-                        .IsRequired()
-                        .HasColumnType("longblob");
-
-                    b.Property<string>("ImgUrl")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime>("TimeStamp")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("varchar(255)");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("SocialFeed");
-                });
 
             modelBuilder.Entity("AB_APP_Slopes_API.Models.Lift", b =>
                 {
@@ -134,10 +70,6 @@ namespace AB_APP_Slopes_API.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("PassImageUrl")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
                     b.HasKey("Id");
 
                     b.ToTable("Resorts");
@@ -148,19 +80,11 @@ namespace AB_APP_Slopes_API.Migrations
                     b.Property<string>("ID")
                         .HasColumnType("varchar(255)");
 
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("IsReloadable")
                         .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasColumnType("longtext");
 
                     b.Property<string>("Resort")
                         .IsRequired()
@@ -398,28 +322,6 @@ namespace AB_APP_Slopes_API.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("AB_APP_Slopes_API.Models.Comment", b =>
-                {
-                    b.HasOne("AB_APP_Slopes_API.Models.FeedPost", null)
-                        .WithMany("Comments")
-                        .HasForeignKey("FeedPostID");
-
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("AB_APP_Slopes_API.Models.FeedPost", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("AB_APP_Slopes_API.Models.Lift", b =>
                 {
                     b.HasOne("AB_APP_Slopes_API.Models.Resort", null)
@@ -498,11 +400,6 @@ namespace AB_APP_Slopes_API.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("AB_APP_Slopes_API.Models.FeedPost", b =>
-                {
-                    b.Navigation("Comments");
                 });
 
             modelBuilder.Entity("AB_APP_Slopes_API.Models.Resort", b =>
