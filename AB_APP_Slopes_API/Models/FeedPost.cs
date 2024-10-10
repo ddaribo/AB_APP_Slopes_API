@@ -16,5 +16,6 @@ namespace AB_APP_Slopes_API.Models
         public IEnumerable<Comment> Comments { get; set; }
 
         public IdentityUser User { get; set; }
+        public string UserId { get; internal set; }
     }
 }

@@ -6,5 +6,6 @@
         public string Time { get; set; }
         public int Elevation { get; set; }
         public SkiPass SkiPass { get; set; }
+        public string SkiPassId { get; internal set; }
     }
 }

@@ -1,8 +1,10 @@
 using AB_APP_Slopes_API.Data;
+using AB_APP_Slopes_API.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System;
 using System.Text;
 
 
@@ -10,16 +12,20 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Configure MySQL (or SQL Server) Connection String
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+/*builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));*/
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+        options.UseInMemoryDatabase("InMemoryDb").EnableSensitiveDataLogging()
+           .LogTo(Console.WriteLine, LogLevel.Information));
+
 
 builder.Services.AddCors(options => options.AddPolicy("CorsPolicy",
-                                builder =>
-                                {
-                                    builder.AllowAnyOrigin()
-                                           .AllowAnyMethod()
-                                           .AllowAnyHeader();
-                                }));
+                            builder =>
+                            {
+                                builder.AllowAnyOrigin()
+                                       .AllowAnyMethod()
+                                       .AllowAnyHeader();
+                            }));
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
@@ -65,6 +71,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    context.Database.EnsureCreated();  // Ensure database and schema are created
+}
 
 app.UseCors("CorsPolicy");
 // Configure the HTTP request pipeline.

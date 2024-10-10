@@ -17,5 +17,6 @@ namespace AB_APP_Slopes_API.Models
         public string FirstName { get; set; }
 
         public string LastName { get; set; }
+        public string UserId { get; internal set; }
     }
 }

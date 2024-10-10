@@ -10,5 +10,6 @@ namespace AB_APP_Slopes_API.Models
         public IdentityUser User { get; set; }
 
         public int FeedPostID { get; set; }
+        public string UserId { get; internal set; }
     }
 }
