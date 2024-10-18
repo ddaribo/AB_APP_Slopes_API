@@ -5,7 +5,7 @@
         public string Id { get; set;}
         public string UserId { get; set; } 
 
-        public string ResortID { get; set; }
+        public int ResortID { get; set; }
 
         public bool IsReloadable { get; set; }
 

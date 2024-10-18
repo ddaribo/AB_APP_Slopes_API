@@ -11,21 +11,22 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure MySQL (or SQL Server) Connection String
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-/*builder.Services.AddDbContext<ApplicationDbContext>(options =>
+/*var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));*/
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseInMemoryDatabase("InMemoryDb").EnableSensitiveDataLogging()
            .LogTo(Console.WriteLine, LogLevel.Information));
 
 
-builder.Services.AddCors(options => options.AddPolicy("CorsPolicy",
-                            builder =>
-                            {
-                                builder.AllowAnyOrigin()
-                                       .AllowAnyMethod()
-                                       .AllowAnyHeader();
-                            }));
+    builder.Services.AddCors(options => options.AddPolicy("CorsPolicy",
+                                builder =>
+                                {
+                                    builder.AllowAnyOrigin()
+                                           .AllowAnyMethod()
+                                           .AllowAnyHeader();
+                                }));
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
@@ -76,9 +77,10 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     context.Database.EnsureCreated();  // Ensure database and schema are created
+
 }
 
-app.UseCors("CorsPolicy");
+    app.UseCors("CorsPolicy");
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

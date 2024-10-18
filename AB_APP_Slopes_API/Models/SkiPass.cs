@@ -8,7 +8,7 @@ namespace AB_APP_Slopes_API.Models
 
         public IdentityUser User { get; set; }
 
-        public string Resort { get; set; }  
+        public int ResortId { get; set; }  
 
         public bool IsReloadable { get; set; }
 

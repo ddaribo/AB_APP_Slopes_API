@@ -17,58 +17,77 @@ public class SkiPassController : ControllerBase
         _dbContext = dbContext;
     }
 
-    [HttpGet]
-    public IActionResult GetSkiPass([FromQuery] string id)
+    [HttpGet("{id}")]
+    public SkiPassDto GetSkiPassById(string id)
+    {
+        var pass = _dbContext.SkiPasses.Select(sp => new SkiPassDto()
+        {
+            Id = sp.ID,
+            UserId= sp.User.Id,
+            ResortID = sp.ResortId,
+            IsReloadable = sp.IsReloadable,
+            IsActive = sp.IsActive,
+            FirstName = sp.FirstName,
+            LastName = sp.LastName
+        }).FirstOrDefault(sp => sp.Id == id);
+        return pass;
+    }
+
+    [HttpGet("SkiPassValidationItems/{id}")]
+    public List<SkiPassValidationItem> GetSkiPassValidationItems(string id)
+    {
+        List<SkiPassValidationItem> items = _dbContext.SkiPassValidationItems.Where(item => item.SkiPass.ID == id).ToList();
+        return items;
+    }
+
+    [HttpGet("LiftStatsForPass/{id}")]
+    public List<SkiPassStatsDto> GetLiftsStatsForPass(string id)
     {
         var pass = _dbContext.SkiPasses.FirstOrDefault(sp => sp.ID == id);
-
-        if (pass == null)
-        {
-            return NotFound(new { message = "Ski pass not found" });
-        }
-
-        return Ok(pass);
+        var liftStats = _dbContext.SkiPassValidationItems
+                          .Where(spvi => spvi.SkiPassId == pass.ID) // Filter by SkiPass ID
+                          .GroupBy(spvi => spvi.LiftId)
+                          .Select(group => new SkiPassStatsDto()
+                          {
+                              LiftId = group.Key,
+                              LiftName = _dbContext.Lifts.FirstOrDefault(l => l.Id == group.Key).Name, 
+                              Count = group.Count()
+                          }).ToList();
+        return liftStats;
     }
 
-    [HttpGet("SkiPassValidationItems")]
-    public IActionResult GetSkiPassValidationItems(string id)
-    {
-        var items = _dbContext.SkiPassValidationItems.Where(item => item.SkiPass.ID == id).ToList();
-        return Ok(items);
-    }
-
-    [HttpGet("UserSkiPasses")]
-    public IActionResult GetSkiPassForUser(string id)
+    [HttpGet("UserSkiPasses/{id}")]
+    public List<SkiPassDto> GetSkiPassForUser(string id)
     {
         var passes = _dbContext.SkiPasses.Where(skipass => skipass.User.Id == id)
             .Select(sp => new SkiPassDto
             {
                 Id = sp.ID,
                 UserId = sp.User.Id,
-                ResortID = sp.Resort,
+                ResortID = sp.ResortId,
                 IsReloadable = sp.IsReloadable,
                 IsActive = sp.IsActive,
                 FirstName = sp.FirstName,
                 LastName = sp.LastName
             }).ToList();
 
-        return Ok(passes);
+        return passes;
     }
 
     [HttpPost]
-    public IActionResult AddSkiPassToUser([FromBody] SkiPassDto skiPassDto)
+    public ActionResponseDTO AddSkiPassToUser([FromBody] SkiPassDto skiPassDto)
     {
         var user = _userManager.Users.FirstOrDefault(u => u.Id == skiPassDto.UserId);
         if (user == null)
         {
-            return NotFound(new { message = "User not found." });
+            return new ActionResponseDTO() { Response = "User pass not found" };
         }
 
         var skiPass = new SkiPass
         {
             ID = Guid.NewGuid().ToString(),
             User = user,
-            Resort = skiPassDto.ResortID,
+            ResortId = skiPassDto.ResortID,
             IsReloadable = skiPassDto.IsReloadable,
             IsActive = skiPassDto.IsActive,
             FirstName = skiPassDto.FirstName,
@@ -78,22 +97,22 @@ public class SkiPassController : ControllerBase
         _dbContext.SkiPasses.Add(skiPass);
         _dbContext.SaveChanges();
 
-        return Ok(new { message = "Ski pass added successfully" });
+        return new ActionResponseDTO() { Response = "Ski pass added" };
     }
 
     [HttpDelete("DeleteSkiPass/{id}")]
-    public IActionResult DeleteSkiPass(string id)
+    public ActionResponseDTO DeleteSkiPass(string id)
     {
         var skiPass = _dbContext.SkiPasses.FirstOrDefault(sp => sp.ID == id);
 
         if (skiPass == null)
         {
-            return NotFound(new { message = "Ski pass not found" });
+            return new ActionResponseDTO() { Response = "Ski pass not found" };
         }
 
         _dbContext.SkiPasses.Remove(skiPass);
         _dbContext.SaveChanges();
 
-        return Ok(new { message = "Ski pass deleted successfully" });
+        return new ActionResponseDTO() { Response = "Successfully deleted"};
     }
 }

@@ -9,13 +9,13 @@ namespace AB_APP_Slopes_API.Models
         public string Content { get; set; }
         public DateTime TimeStamp { get; set; }
 
-        public byte[] Image { get; set; }
-
         public string ImgUrl { get; set; }
-
         public IEnumerable<Comment> Comments { get; set; }
 
         public IdentityUser User { get; set; }
         public string UserId { get; internal set; }
+
+        public Resort Resort { get; set; }
+        public int ResortId { get; set; }
     }
 }
