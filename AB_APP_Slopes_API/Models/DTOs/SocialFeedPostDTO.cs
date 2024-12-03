@@ -7,9 +7,9 @@ namespace AB_APP_Slopes_API.Models.DTOs
         public int ID { get; set; }
         public string Title { get; set; }
         public string Content { get; set; }
-        public DateTime TimeStamp { get; set; }
+        public string TimeStamp { get; set; }
         public string ImgUrl { get; set; }
-        public string UserName { get; internal set; }
+        public string UserName { get;  set; }
         public string ResortName { get; set; }
     }
 }

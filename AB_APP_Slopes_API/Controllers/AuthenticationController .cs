@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AB_APP_Slopes_API.Models.DTOs;
 
 namespace SimpleApiWithAuth.Controllers
 {
@@ -27,55 +28,76 @@ namespace SimpleApiWithAuth.Controllers
 
         // POST: api/authentication/register
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterModel model)
+        public RegisterResultDTO Register([FromBody] RegisterModel model)
         {
+            var resultDTO = new RegisterResultDTO();
+
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            {
+                resultDTO.Errors = new List<string> { "Invalid model state." };
+                return resultDTO;
+            }
 
             var user = new IdentityUser { UserName = model.Email, Email = model.Email };
-            var result = await _userManager.CreateAsync(user, model.Password);
+            var result = _userManager.CreateAsync(user, model.Password).Result;
 
             if (result.Succeeded)
             {
                 // Optionally sign the user in after registration
-                await _signInManager.SignInAsync(user, isPersistent: false);
-                return Ok(new { Message = "User registered successfully" });
+                _signInManager.SignInAsync(user, isPersistent: false).Wait();
+                return new RegisterResultDTO(); // No errors, registration succeeded
             }
 
-            foreach (var error in result.Errors)
-            {
-                ModelState.AddModelError(error.Code, error.Description);
-            }
-
-            return BadRequest(ModelState);
+            resultDTO.Errors = result.Errors.Select(e => $"{e.Code}: {e.Description}").ToList();
+            return resultDTO;
         }
 
         // POST: api/authentication/login
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginModel model)
+        public LoginResultDTO Login([FromBody] LoginModel model)
         {
+            var resultDTO = new LoginResultDTO();
+
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            {
+                resultDTO.Errors = new List<string> { "Invalid model state." };
+                return resultDTO;
+            }
 
-            var user = await _userManager.FindByEmailAsync(model.Email);
+            var user = _userManager.FindByEmailAsync(model.Email).Result;
             if (user == null)
-                return Unauthorized(new { Message = "Invalid login attempt" });
+            {
+                resultDTO.Errors = new List<string> { "Invalid login attempt" };
+                return resultDTO;
+            }
 
-            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+            var passwordValid =  _userManager.CheckPasswordAsync(user, model.Password).Result;
+            if (!passwordValid)
+            {
+                resultDTO.Errors = new List<string> { "Invalid password" };
+
+            }
+
+            var result = _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false).Result;
 
             if (result.Succeeded)
             {
-                var token = await GenerateJwtToken(user);
-                return Ok(new { Token = token, Message = "Login successful" });
+                resultDTO.Token = GenerateJwtToken(user).Result;
+                resultDTO.UserId = user.Id;
+                resultDTO.UserEmail = user.Email;
+                resultDTO.UserName = user.UserName;
+                return resultDTO;
             }
             else if (result.IsLockedOut)
             {
-                return BadRequest(new { Message = "User account locked out" });
+                resultDTO.Errors = new List<string> { "User account locked out" };
             }
             else
             {
-                return Unauthorized(new { Message = "Invalid login attempt" });
+                resultDTO.Errors = new List<string> { "Invalid login attempt" };
             }
+
+            return resultDTO;
         }
 
         private async Task<string> GenerateJwtToken(IdentityUser user)

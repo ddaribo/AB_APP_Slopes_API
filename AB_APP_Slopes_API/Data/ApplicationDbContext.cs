@@ -19,6 +19,13 @@ namespace AB_APP_Slopes_API.Data
         public DbSet<FeedPost> SocialFeed { get; set; }
         public DbSet<Comment> Comments { get; set; }
 
+        public string GenerateIdentityPasswordHash(string password)
+        {
+            var passwordHasher = new PasswordHasher<IdentityUser>();
+            var hashedPassword = passwordHasher.HashPassword(new IdentityUser(), password);
+            return hashedPassword;
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder); // Ensure Identity tables are created
@@ -49,6 +56,7 @@ namespace AB_APP_Slopes_API.Data
                 .OnDelete(DeleteBehavior.Cascade);    // Optional: Cascade delete if the Resort is deleted
 
             // Seed IdentityUser (AspNetUser)
+            // pass is 123456
             var user = new IdentityUser
             {
                 Id = "e4b5e8c5-3253-4a5d-b0c5-b2845e0672e3",
@@ -57,7 +65,7 @@ namespace AB_APP_Slopes_API.Data
                 Email = "user@example.com",
                 NormalizedEmail = "USER@EXAMPLE.COM",
                 EmailConfirmed = false,
-                PasswordHash = "AQAAAAIAAYagAAAAEDgMpSD8PRl5bjhwpfAmC03rdAemVqABZVtyp4rm7HM1etb2110YmPLtfLQxMAzfxg==",
+                PasswordHash = GenerateIdentityPasswordHash("123456"),
                 SecurityStamp = "MUCKVMYLN3EZL7HJPIJBRX6GWW3TWZKS",
                 ConcurrencyStamp = "3e572262-3307-4ce7-85c7-ab3aa6e9746e",
                 PhoneNumberConfirmed = false,

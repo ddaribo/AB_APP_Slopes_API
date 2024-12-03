@@ -25,7 +25,7 @@ namespace AB_APP_Slopes_API.Controllers
             {
                 Content = p.Content,
                 Title = p.Title,
-                TimeStamp = p.TimeStamp,
+                TimeStamp = p.TimeStamp.ToString(),
                 ImgUrl = p.ImgUrl,
                 ID = p.ID,
                 UserName = _dbContext.Users.FirstOrDefault(u => u.Id == p.UserId).UserName ?? "Unknown",
@@ -40,7 +40,7 @@ namespace AB_APP_Slopes_API.Controllers
             SocialFeedPostDTO post = _dbContext.SocialFeed.Select(p => new SocialFeedPostDTO { 
                 Content = p.Content,
                 Title = p.Title,
-                TimeStamp = p.TimeStamp,
+                TimeStamp = p.TimeStamp.ToString(),
                 ImgUrl = p.ImgUrl,
                 ID = p.ID,
                 UserName = _dbContext.Users.FirstOrDefault(u => u.Id == p.UserId).UserName ?? "Unknown",
@@ -56,5 +56,27 @@ namespace AB_APP_Slopes_API.Controllers
             return comments;
 
         }
+
+        [HttpPost("CreatePost")]
+        public SocialFeedPostDTO CreatePost([FromBody] SocialFeedPostDTO postDto)
+        {
+            var post = new FeedPost
+            {
+                Title = postDto.Title,
+                Content = postDto.Content,
+                TimeStamp = DateTime.Now,
+                ImgUrl = postDto.ImgUrl,
+                UserId = _dbContext.Users.FirstOrDefault(u => u.UserName == postDto.UserName)?.Id ?? "",
+                ResortId = _dbContext.Resorts.FirstOrDefault(r => r.Name == postDto.ResortName)?.Id ?? 0
+            };
+
+            _dbContext.SocialFeed.Add(post);
+            _dbContext.SaveChanges();
+
+            postDto.ID = post.ID; 
+            return postDto;
+        }
+
+
     }
 }
